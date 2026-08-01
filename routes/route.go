@@ -2,8 +2,9 @@ package routes
 
 import (
 	"net/http"
+	"template-go-api/enums"
+	middleware2 "template-go-api/middleware"
 
-	"template-go-api/app/enums"
 	"template-go-api/utils"
 
 	"github.com/gin-gonic/gin"
@@ -18,10 +19,18 @@ func ErrorHandleWrapper(h func(*gin.Context) error) gin.HandlerFunc {
 	}
 }
 
-func RegisterRoute(router *gin.Engine) {
+func RegisterRoute(router *gin.Engine, c *Container) {
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, utils.NewHttpError("Route does not exist", enums.ERR_ROUTE_NOT_FOUND, nil))
 	})
 
-	router.Group("/api")
+	api := router.Group("/api")
+
+	{
+		api.POST("/auth/login", ErrorHandleWrapper(c.AuthHandler.Login))
+		//api.POST("/auth/forgot-password", ErrorHandleWrapper(c.ForgotPasswordHandler.ForgotPassword))
+		api.POST("/auth/reset-password", ErrorHandleWrapper(c.ResetPasswordHandler.ResetPassword))
+		api.POST("/auth/refresh", middleware2.RefreshMiddleware(), ErrorHandleWrapper(c.AuthHandler.Refresh))
+	}
+
 }

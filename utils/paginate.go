@@ -1,9 +1,9 @@
 package utils
 
 import (
-   "template-go-api/app/enums"
 	"math"
 	"strconv"
+	"template-go-api/enums"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

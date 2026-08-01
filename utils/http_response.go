@@ -2,16 +2,18 @@ package utils
 
 import (
 	"fmt"
+	"template-go-api/enums"
 	"time"
-    "template-go-api/app/enums"
+
+	"github.com/gin-gonic/gin"
 )
 
 type BaseHttpResponse struct {
 	Code       enums.ResponseCode `json:"code"`
-	Message    string            `json:"message"`
-	StatusCode int               `json:"status_code"`
-	Timestamp  time.Time         `json:"timestamp"`
-	Payload    *Payload          `json:"payload"`
+	Message    string             `json:"message"`
+	StatusCode int                `json:"status_code"`
+	Timestamp  time.Time          `json:"timestamp"`
+	Payload    *Payload           `json:"payload"`
 }
 type HTTPResponse struct {
 	BaseHttpResponse
@@ -47,12 +49,16 @@ type PaginationMeta struct {
 	Total       int64  `json:"total"`
 }
 
-func NewHttpSuccess(message string, payload *Payload) *HTTPResponse {
+func NewHttpSuccess(message string, payload *Payload, responseCode ...enums.ResponseCode) *HTTPResponse {
+	responseStatus := enums.SUCCESS
+	if len(responseCode) > 0 {
+		responseStatus = responseCode[0]
+	}
 	return &HTTPResponse{
 		BaseHttpResponse: BaseHttpResponse{
-			Code:       enums.SUCCESS,
+			Code:       responseStatus,
 			Timestamp:  time.Now(),
-			StatusCode: enums.SUCCESS.HTTPStatus(),
+			StatusCode: responseStatus.HTTPStatus(),
 			Message:    message,
 			Payload:    payload,
 		},
@@ -70,4 +76,25 @@ func NewHttpError(message string, code enums.ResponseCode, errors *map[string][]
 		},
 		Errors: errors,
 	}
+}
+
+func ResponseJSON(c *gin.Context, code enums.ResponseCode, message string, data interface{}) {
+	var finalPayload *Payload
+
+	switch v := data.(type) {
+	case *Payload:
+		finalPayload = v
+	case Payload:
+		finalPayload = &v
+	default:
+		finalPayload = &Payload{
+			Data: data,
+			Meta: nil,
+		}
+	}
+
+	c.JSON(
+		code.HTTPStatus(),
+		NewHttpSuccess(message, finalPayload, code),
+	)
 }

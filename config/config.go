@@ -7,12 +7,13 @@ import (
 )
 
 type Config struct {
-	AppPort    string
-	DbUser     string
-	DbPassword string
-	DbHost     string
-	DbPort     string
-	DbName     string
+	AppPort     string
+	FrontendURL string
+	DbUser      string
+	DbPassword  string
+	DbHost      string
+	DbPort      string
+	DbName      string
 }
 
 var AppConfig *Config
@@ -23,12 +24,17 @@ func LoadEnv() {
 		panic(err)
 	}
 
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:3000"
+	}
 	AppConfig = &Config{
-		AppPort:    os.Getenv("APP_PORT"),
-		DbUser:     os.Getenv("DB_USER"),
-		DbPassword: os.Getenv("DB_PASSWORD"),
-		DbHost:     os.Getenv("DB_HOST"),
-		DbPort:     os.Getenv("DB_PORT"),
-		DbName:     os.Getenv("DB_NAME"),
+		AppPort:     os.Getenv("APP_PORT"),
+		FrontendURL: os.Getenv("FRONTEND_URL"),
+		DbUser:      os.Getenv("DB_USER"),
+		DbPassword:  os.Getenv("DB_PASSWORD"),
+		DbHost:      os.Getenv("DB_HOST"),
+		DbPort:      os.Getenv("DB_PORT"),
+		DbName:      os.Getenv("DB_NAME"),
 	}
 }

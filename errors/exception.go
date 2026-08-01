@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"template-go-api/app/enums"
+	"template-go-api/enums"
 	"template-go-api/utils"
 )
 
@@ -36,4 +36,8 @@ func InternalServerError(messages ...string) *utils.HTTPError {
 
 func UnauthorizedException(messages ...string) *utils.HTTPError {
 	return newError(enums.ERR_ACTION_UNAUTHORIZED, "Unauthorized", messages...)
+}
+
+func DataNotFoundException(messages ...string) *utils.HTTPError {
+	return newError(enums.ERR_NOT_FOUND, "Data not found", messages...)
 }

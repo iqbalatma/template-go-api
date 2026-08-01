@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"template-go-api/enums"
+
+	"template-go-api/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"template-go-api/app/enums"
-	"template-go-api/utils"
 )
 
 var messages = map[string]string{

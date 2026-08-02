@@ -7,13 +7,17 @@ import (
 )
 
 type Config struct {
-	AppPort     string
-	FrontendURL string
-	DbUser      string
-	DbPassword  string
-	DbHost      string
-	DbPort      string
-	DbName      string
+	AppPort       string
+	FrontendURL   string
+	DbUser        string
+	DbPassword    string
+	DbHost        string
+	DbPort        string
+	DbName        string
+	RedisHost     string
+	RedisPort     string
+	RedisPassword string
+	RedisDB       string
 }
 
 var AppConfig *Config
@@ -41,5 +45,10 @@ func LoadEnv() {
 		DbHost:      os.Getenv("DB_HOST"),
 		DbPort:      os.Getenv("DB_PORT"),
 		DbName:      os.Getenv("DB_NAME"),
+
+		RedisHost:     os.Getenv("JWT_REDIS_HOST"),
+		RedisPort:     os.Getenv("JWT_REDIS_PORT"),
+		RedisPassword: os.Getenv("JWT_REDIS_PASSWORD"),
+		RedisDB:       os.Getenv("JWT_REDIS_DB"),
 	}
 }

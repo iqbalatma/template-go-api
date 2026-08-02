@@ -18,6 +18,7 @@ func main() {
 	config.LoadEnv()
 	config.LoadLogger()
 	config.ConnectDB()
+	config.ConnectRDB()
 
 	gofortify.LoadJWTConfig()
 	validator.RegisterUniqueColumnValidator()

@@ -1,6 +1,6 @@
 package user
 
-import "api-monitoring/utils"
+import "template-go-api/utils"
 
 type Resource struct {
 	Id          string  `json:"id"`

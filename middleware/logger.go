@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"api-monitoring/config"
 	"net/http"
+	"template-go-api/config"
 	"time"
 
 	"github.com/gin-gonic/gin"

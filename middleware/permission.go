@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	user2 "api-monitoring/app/user"
-	"api-monitoring/enums"
-	errors2 "api-monitoring/errors"
-	"api-monitoring/utils"
+	user2 "template-go-api/app/user"
+	"template-go-api/enums"
+	errors2 "template-go-api/errors"
+	"template-go-api/utils"
 
 	"github.com/gin-gonic/gin"
 )

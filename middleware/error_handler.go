@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"api-monitoring/enums"
-	"api-monitoring/utils"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"template-go-api/enums"
+	"template-go-api/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

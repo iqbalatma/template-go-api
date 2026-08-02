@@ -1,11 +1,11 @@
 package middleware
 
 import (
-	user2 "api-monitoring/app/user"
-	"api-monitoring/config"
-	errors2 "api-monitoring/errors"
-	"api-monitoring/utils"
 	"errors"
+	user2 "template-go-api/app/user"
+	"template-go-api/config"
+	errors2 "template-go-api/errors"
+	"template-go-api/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/iqbalatma/gofortify"

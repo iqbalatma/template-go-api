@@ -130,3 +130,19 @@ func (r *RoleRepository) DeleteById(c *gin.Context, id string) error {
 	}
 	return nil
 }
+
+type PermissionRepository struct {
+	db *gorm.DB
+}
+
+func NewPermissionRepository(db *gorm.DB) *PermissionRepository {
+	return &PermissionRepository{
+		db: db,
+	}
+}
+
+func (r *PermissionRepository) GetAll(c *gin.Context) ([]Permission, error) {
+	var permissions []Permission
+	err := r.db.WithContext(c).Find(&permissions).Error
+	return permissions, err
+}

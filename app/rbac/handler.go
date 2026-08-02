@@ -83,3 +83,22 @@ func (h *RoleHandler) Destroy(c *gin.Context) error {
 	utils.ResponseJSON(c, enums.SUCCESS, "Delete role by id successfully", nil)
 	return nil
 }
+
+type PermissionHandler struct {
+	repository *PermissionRepository
+}
+
+func NewPermissionHandler(repository *PermissionRepository) *PermissionHandler {
+	return &PermissionHandler{
+		repository: repository,
+	}
+}
+
+func (h *PermissionHandler) Index(c *gin.Context) error {
+	permissions, err := h.repository.GetAll(c)
+	if err != nil {
+		return err
+	}
+	utils.ResponseJSON(c, enums.SUCCESS, "Permissions retrieved", NewPermissionResourceCollection(permissions))
+	return nil
+}

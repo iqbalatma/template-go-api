@@ -19,11 +19,20 @@ func NewRoleHandler(repository *RoleRepository) *RoleHandler {
 }
 
 func (h *RoleHandler) Index(c *gin.Context) error {
-	roles, err := h.repository.GetAll(c)
+	roles, err := h.repository.GetAll(c, true)
 	if err != nil {
 		return err
 	}
 	utils.ResponseJSON(c, enums.SUCCESS, "Roles retrieved", NewRoleResourceCollection(roles))
+	return nil
+}
+
+func (h *RoleHandler) MasterIndex(c *gin.Context) error {
+	roles, err := h.repository.GetAll(c, false)
+	if err != nil {
+		return err
+	}
+	utils.ResponseJSON(c, enums.SUCCESS, "Roles retrieved", NewRoleMasterResourceCollection(roles))
 	return nil
 }
 

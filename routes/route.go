@@ -30,6 +30,11 @@ func RegisterRoute(router *gin.Engine, c *Container) {
 		api.POST("/auth/authenticate", ErrorHandleWrapper(c.AuthHandler.Login))
 		api.POST("/auth/refresh", middleware2.RefreshMiddleware(), ErrorHandleWrapper(c.AuthHandler.Refresh))
 		api.POST("/auth/logout", middleware2.AuthMiddleware(), ErrorHandleWrapper(c.AuthHandler.Logout))
+		api.GET("/auth/me", middleware2.AuthMiddleware(), ErrorHandleWrapper(c.AuthHandler.Me))
 	}
 
+	{
+		api.GET("master/permissions", ErrorHandleWrapper(c.PermissionHandler.Index))
+		api.GET("master/roles", ErrorHandleWrapper(c.RoleHandler.MasterIndex))
+	}
 }

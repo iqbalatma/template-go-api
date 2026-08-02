@@ -18,9 +18,13 @@ func NewRoleRepository(db *gorm.DB) *RoleRepository {
 	}
 }
 
-func (r *RoleRepository) GetAll(c *gin.Context) ([]Role, error) {
+func (r *RoleRepository) GetAll(c *gin.Context, withPermissions bool) ([]Role, error) {
 	var roles []Role
-	err := r.db.WithContext(c).Preload("Permissions").Find(&roles).Error
+	query := r.db.WithContext(c)
+	if withPermissions {
+		query = query.Preload("Permissions")
+	}
+	err := query.Find(&roles).Error
 	return roles, err
 }
 

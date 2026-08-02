@@ -1,11 +1,16 @@
 package rbac
 
 type RoleResource struct {
-	Id          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	IsMutable   bool                   `json:"is_mutable"`
-	Description *string                `json:"description"`
-	Permissions []PermissionResource   `json:"permissions"`
+	Id          string               `json:"id"`
+	Name        string               `json:"name"`
+	IsMutable   bool                 `json:"is_mutable"`
+	Description *string              `json:"description"`
+	Permissions []PermissionResource `json:"permissions"`
+}
+
+type RoleMasterResource struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
 }
 
 func NewRoleResource(role *Role) *RoleResource {
@@ -26,6 +31,20 @@ func NewRoleResourceCollection(roles []Role) []RoleResource {
 	result := make([]RoleResource, len(roles))
 	for i, role := range roles {
 		result[i] = *NewRoleResource(&role)
+	}
+	return result
+}
+
+func NewRoleMasterResource(role *Role) *RoleMasterResource {
+	return &RoleMasterResource{
+		Id:   role.ID.String(),
+		Name: role.Name,
+	}
+}
+func NewRoleMasterResourceCollection(roles []Role) []RoleMasterResource {
+	result := make([]RoleMasterResource, len(roles))
+	for i, role := range roles {
+		result[i] = *NewRoleMasterResource(&role)
 	}
 	return result
 }

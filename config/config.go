@@ -28,8 +28,13 @@ func LoadEnv() {
 	if frontendURL == "" {
 		frontendURL = "http://localhost:3000"
 	}
+
+	appPort := os.Getenv("APP_PORT")
+	if appPort == "" {
+		appPort = "8000"
+	}
 	AppConfig = &Config{
-		AppPort:     os.Getenv("APP_PORT"),
+		AppPort:     appPort,
 		FrontendURL: os.Getenv("FRONTEND_URL"),
 		DbUser:      os.Getenv("DB_USER"),
 		DbPassword:  os.Getenv("DB_PASSWORD"),

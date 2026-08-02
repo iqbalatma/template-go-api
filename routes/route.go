@@ -27,10 +27,9 @@ func RegisterRoute(router *gin.Engine, c *Container) {
 	api := router.Group("/api")
 
 	{
-		api.POST("/auth/login", ErrorHandleWrapper(c.AuthHandler.Login))
-		//api.POST("/auth/forgot-password", ErrorHandleWrapper(c.ForgotPasswordHandler.ForgotPassword))
-		api.POST("/auth/reset-password", ErrorHandleWrapper(c.ResetPasswordHandler.ResetPassword))
+		api.POST("/auth/authenticate", ErrorHandleWrapper(c.AuthHandler.Login))
 		api.POST("/auth/refresh", middleware2.RefreshMiddleware(), ErrorHandleWrapper(c.AuthHandler.Refresh))
+		api.POST("/auth/logout", middleware2.AuthMiddleware(), ErrorHandleWrapper(c.AuthHandler.Logout))
 	}
 
 }

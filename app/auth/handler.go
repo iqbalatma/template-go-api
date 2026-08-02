@@ -57,8 +57,8 @@ func (h *Handler) Login(c *gin.Context) error {
 		return err
 	}
 
-	c.SetCookie("access_token_verifier", atv, gofortify.Config.AccessTokenTTL*60, "/", "", true, true)
-	c.SetCookie("refresh_token", refreshToken, gofortify.Config.RefreshTokenTTL*60, "/", "", true, true)
+	c.SetCookie("access_token_verifier", atv, gofortify.Config.AccessTokenTTL*60, "/", "", false, true)
+	c.SetCookie("refresh_token", refreshToken, gofortify.Config.RefreshTokenTTL*60, "/", "", false, true)
 
 	utils.ResponseJSON(c, enums.SUCCESS, "Login successfully", NewResource(&u, accessToken, refreshToken))
 	return nil

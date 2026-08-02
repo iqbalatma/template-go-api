@@ -2,3 +2,4 @@
 .env
 go.log
 tmp
+main

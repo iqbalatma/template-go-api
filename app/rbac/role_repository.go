@@ -46,7 +46,21 @@ func (r *RoleRepository) AddNew(c *gin.Context, request RoleStoreRequest) (*Role
 		IsMutable:   true,
 		Description: request.Description,
 	}
-	if err := r.db.WithContext(c).Create(&role).Error; err != nil {
+
+	err := r.db.WithContext(c).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&role).Error; err != nil {
+			return err
+		}
+
+		if len(request.PermissionIDs) > 0 {
+			if err := r.syncPermissions(tx, &role, request.PermissionIDs); err != nil {
+				return err
+			}
+		}
+
+		return tx.Preload("Permissions").First(&role, "id = ?", role.ID).Error
+	})
+	if err != nil {
 		return nil, err
 	}
 	return &role, nil
@@ -54,24 +68,48 @@ func (r *RoleRepository) AddNew(c *gin.Context, request RoleStoreRequest) (*Role
 
 func (r *RoleRepository) UpdateById(c *gin.Context, id string, request RoleUpdateRequest) (*Role, error) {
 	var role Role
-	if err := r.db.WithContext(c).First(&role, "id = ?", id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors2.DataNotFoundException()
+
+	err := r.db.WithContext(c).Transaction(func(tx *gorm.DB) error {
+		if err := tx.First(&role, "id = ?", id).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errors2.DataNotFoundException()
+			}
+			return err
 		}
-		return nil, err
-	}
 
-	if !role.IsMutable && request.Name != role.Name {
-		return nil, errors2.InvalidAction("Role name is not mutable and cannot be changed")
-	}
+		if !role.IsMutable && request.Name != role.Name {
+			return errors2.InvalidAction("Role name is not mutable and cannot be changed")
+		}
 
-	role.Name = request.Name
-	role.Description = request.Description
+		role.Name = request.Name
+		role.Description = request.Description
 
-	if err := r.db.WithContext(c).Save(&role).Error; err != nil {
+		if err := tx.Save(&role).Error; err != nil {
+			return err
+		}
+
+		if request.PermissionIDs != nil {
+			if err := r.syncPermissions(tx, &role, request.PermissionIDs); err != nil {
+				return err
+			}
+		}
+
+		return tx.Preload("Permissions").First(&role, "id = ?", id).Error
+	})
+	if err != nil {
 		return nil, err
 	}
 	return &role, nil
+}
+
+func (r *RoleRepository) syncPermissions(tx *gorm.DB, role *Role, permissionIDs []string) error {
+	var permissions []Permission
+	if len(permissionIDs) > 0 {
+		if err := tx.Where("id IN ?", permissionIDs).Find(&permissions).Error; err != nil {
+			return err
+		}
+	}
+	return tx.Model(role).Association("Permissions").Replace(&permissions)
 }
 
 func (r *RoleRepository) DeleteById(c *gin.Context, id string) error {

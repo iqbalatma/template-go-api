@@ -16,6 +16,7 @@ import (
 var messages = map[string]string{
 	"required":      "{field} wajib diisi",
 	"email":         "{field} harus berupa email yang valid",
+	"min":           "{field} minimal {param} karakter",
 	"max":           "{field} maksimal {param} karakter",
 	"gte":           "{field} harus lebih besar atau sama dengan {param}",
 	"unique_column": "{field} {value} already exists",

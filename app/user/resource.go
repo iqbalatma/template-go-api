@@ -1,14 +1,18 @@
 package user
 
-import "template-go-api/utils"
+import (
+	"template-go-api/app/rbac"
+	"template-go-api/utils"
+)
 
 type Resource struct {
-	Id          string  `json:"id"`
-	FirstName   string  `json:"first_name"`
-	LastName    *string `json:"last_name"`
-	Email       string  `json:"email"`
-	PhoneNumber *string `json:"phone_number"`
-	CreatedAt   string  `json:"created_at"`
+	Id          string                    `json:"id"`
+	FirstName   string                    `json:"first_name"`
+	LastName    *string                   `json:"last_name"`
+	Email       string                    `json:"email"`
+	PhoneNumber *string                   `json:"phone_number"`
+	CreatedAt   string                    `json:"created_at"`
+	Roles       []rbac.RoleMasterResource `json:"roles"`
 }
 
 func NewResource(user *User) *Resource {
@@ -19,6 +23,7 @@ func NewResource(user *User) *Resource {
 		Email:       user.Email,
 		PhoneNumber: user.PhoneNumber,
 		CreatedAt:   utils.FormatDateTimeVal(user.CreatedAt),
+		Roles:       rbac.NewRoleMasterResourceCollection(user.Roles),
 	}
 }
 

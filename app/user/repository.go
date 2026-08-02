@@ -22,7 +22,7 @@ func NewRepository(db *gorm.DB) *Repository {
 
 func (r *Repository) GetAllPaginated(c *gin.Context) ([]User, *utils.PaginationMeta, error) {
 	var users []User
-	meta, err := utils.Paginate(c, r.db, &users)
+	meta, err := utils.Paginate(c, r.db.WithContext(c).Preload("Roles"), &users)
 	if err != nil {
 		return nil, meta, err
 	}

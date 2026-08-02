@@ -33,6 +33,10 @@ func Paginate[T any](c *gin.Context, db *gorm.DB, out *[]T) (*PaginationMeta, er
 		)
 	}
 
+	// Session ensures each finisher below starts from a clean statement clone,
+	// so a pre-conditioned db (preloads, where, joins) can be passed in safely.
+	db = db.Session(&gorm.Session{})
+
 	var total int64
 	db.Model(out).Count(&total)
 

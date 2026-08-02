@@ -13,21 +13,26 @@ func RegisterUniqueColumnValidator() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		err := v.RegisterValidation("unique_column", func(fl validator.FieldLevel) bool {
 			param := fl.Param()
-			parts := strings.Split(param, " ")
-			if len(parts) != 2 {
+			parts := strings.Fields(param)
+			if len(parts) != 2 && len(parts) != 3 {
 				return false
 			}
 
-			table := strings.TrimSpace(parts[0])
-			column := strings.TrimSpace(parts[1])
+			table := parts[0]
+			column := parts[1]
 			value := fl.Field().Interface()
 
+			query := config.DB.Table(table).Where(fmt.Sprintf("%s = ?", column), value)
+
+			if len(parts) == 3 {
+				exceptField := fl.Parent().FieldByName(parts[2])
+				if exceptField.IsValid() && exceptField.String() != "" {
+					query = query.Where("id != ?", exceptField.Interface())
+				}
+			}
+
 			var count int64
-			if err := config.
-				DB.
-				Table(table).
-				Where(fmt.Sprintf("%s = ?", column), value).
-				Count(&count).Error; err != nil {
+			if err := query.Count(&count).Error; err != nil {
 				return false
 			}
 

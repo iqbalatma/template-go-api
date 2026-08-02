@@ -37,4 +37,11 @@ func RegisterRoute(router *gin.Engine, c *Container) {
 		api.GET("master/permissions", ErrorHandleWrapper(c.PermissionHandler.Index))
 		api.GET("master/roles", ErrorHandleWrapper(c.RoleHandler.MasterIndex))
 	}
+
+	{
+		api.GET("rbac/roles", ErrorHandleWrapper(c.RoleHandler.Index))
+		api.POST("rbac/roles", ErrorHandleWrapper(c.RoleHandler.Store))
+		api.PATCH("rbac/roles/:id", ErrorHandleWrapper(c.RoleHandler.Update))
+		api.DELETE("rbac/roles/:id", ErrorHandleWrapper(c.RoleHandler.Destroy))
+	}
 }

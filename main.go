@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"template-go-api/app/media"
 	"template-go-api/config"
 	"template-go-api/enums"
 	middleware2 "template-go-api/middleware"
@@ -20,6 +21,12 @@ func main() {
 	config.ConnectDB()
 	config.ConnectRDB()
 
+	media.Boot(media.Config{
+		DefaultDisk:  config.AppConfig.MediaDisk,
+		LocalRoot:    config.AppConfig.MediaRoot,
+		LocalBaseURL: config.AppConfig.MediaURLPrefix,
+	})
+
 	gofortify.LoadJWTConfig()
 	validator.RegisterUniqueColumnValidator()
 	router := gin.Default()
@@ -34,6 +41,10 @@ func main() {
 		Use(middleware2.LoggerMiddleware()).
 		Use(middleware2.CorsMiddleware()).
 		Use(middleware2.ErrorHandler())
+
+	// File pada disk lokal disajikan langsung oleh aplikasi. Bila nanti pindah
+	// ke S3, baris ini bisa dilepas karena URL-nya datang dari disk tersebut.
+	router.Static(config.AppConfig.MediaURLPrefix, config.AppConfig.MediaRoot)
 
 	container := routes.NewContainer(config.DB)
 	routes.RegisterRoute(router, container)

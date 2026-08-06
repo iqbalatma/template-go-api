@@ -30,7 +30,14 @@ func RegisterRoute(router *gin.Engine, c *Container) {
 		api.POST("/auth/authenticate", ErrorHandleWrapper(c.AuthHandler.Login))
 		api.POST("/auth/refresh", middleware2.RefreshMiddleware(), ErrorHandleWrapper(c.AuthHandler.Refresh))
 		api.POST("/auth/logout", middleware2.AuthMiddleware(), ErrorHandleWrapper(c.AuthHandler.Logout))
-		api.GET("/auth/me", middleware2.AuthMiddleware(), ErrorHandleWrapper(c.AuthHandler.Me))
+	}
+
+	{
+		// Seluruh route me memakai user dari token, tidak ada id dari client.
+		me := api.Group("me", middleware2.AuthMiddleware())
+		me.GET("", ErrorHandleWrapper(c.ProfileHandler.Me))
+		me.PATCH("", ErrorHandleWrapper(c.ProfileHandler.Update))
+		me.GET("avatar", ErrorHandleWrapper(c.ProfileHandler.ShowAvatar))
 	}
 
 	{

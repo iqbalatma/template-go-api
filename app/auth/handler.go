@@ -99,15 +99,3 @@ func (h *Handler) Refresh(c *gin.Context) error {
 	utils.ResponseJSON(c, enums.SUCCESS, "Token refreshed successfully", NewResource(u, accessToken, refreshToken))
 	return nil
 }
-
-func (h *Handler) Me(c *gin.Context) error {
-	u, exists := c.Get("user")
-	if !exists {
-		httpErr := errors2.UnauthorizedException()
-		c.AbortWithStatusJSON(httpErr.StatusCode, utils.NewHttpError(httpErr.Message, httpErr.Code, nil))
-		return nil
-	}
-
-	utils.ResponseJSON(c, enums.SUCCESS, "Authenticated user", user.NewResource(u.(*user.User)))
-	return nil
-}

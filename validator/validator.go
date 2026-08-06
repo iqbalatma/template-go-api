@@ -43,26 +43,34 @@ func translateError(fieldError validator.FieldError) string {
 }
 
 func BindAndValidate(c *gin.Context, obj interface{}) bool {
-	if err := c.ShouldBindJSON(obj); err != nil {
-		var validatorError validator.ValidationErrors
+	return respondBindError(c, c.ShouldBindJSON(obj))
+}
 
-		if errors.As(err, &validatorError) {
-			errorMap := make(map[string][]string)
-			for _, fe := range validatorError {
-				field := formatField(fe.Field())
-				msg := translateError(fe)
-				errorMap[field] = append(errorMap[field], msg)
-			}
+// BindAndValidateForm memilih cara binding berdasarkan Content-Type, sehingga
+// satu endpoint bisa menerima multipart/form-data (saat ada file yang diunggah)
+// maupun JSON biasa.
+func BindAndValidateForm(c *gin.Context, obj interface{}) bool {
+	return respondBindError(c, c.ShouldBind(obj))
+}
 
-			c.JSON(http.StatusBadRequest, utils.NewHttpError("Validation error", enums.ERR_BAD_REQUEST, &errorMap))
-			return false
+func respondBindError(c *gin.Context, err error) bool {
+	if err == nil {
+		return true
+	}
+
+	var validatorError validator.ValidationErrors
+	if errors.As(err, &validatorError) {
+		errorMap := make(map[string][]string)
+		for _, fe := range validatorError {
+			field := formatField(fe.Field())
+			msg := translateError(fe)
+			errorMap[field] = append(errorMap[field], msg)
 		}
 
-		c.JSON(http.StatusBadRequest, utils.NewHttpError(err.Error(), enums.ERR_BAD_REQUEST, nil))
-
+		c.JSON(http.StatusBadRequest, utils.NewHttpError("Validation error", enums.ERR_BAD_REQUEST, &errorMap))
 		return false
 	}
 
-	//its mean error is not nil
-	return true
+	c.JSON(http.StatusBadRequest, utils.NewHttpError(err.Error(), enums.ERR_BAD_REQUEST, nil))
+	return false
 }

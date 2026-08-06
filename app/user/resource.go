@@ -1,6 +1,7 @@
 package user
 
 import (
+	"template-go-api/app/media"
 	"template-go-api/app/rbac"
 	"template-go-api/utils"
 )
@@ -13,6 +14,7 @@ type Resource struct {
 	PhoneNumber *string                   `json:"phone_number"`
 	CreatedAt   string                    `json:"created_at"`
 	Roles       []rbac.RoleMasterResource `json:"roles"`
+	Avatar      *media.Resource           `json:"avatar"`
 }
 
 func NewResource(user *User) *Resource {
@@ -24,6 +26,7 @@ func NewResource(user *User) *Resource {
 		PhoneNumber: user.PhoneNumber,
 		CreatedAt:   utils.FormatDateTimeVal(user.CreatedAt),
 		Roles:       rbac.NewRoleMasterResourceCollection(user.Roles),
+		Avatar:      media.NewResource(user.Avatar),
 	}
 }
 

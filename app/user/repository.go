@@ -2,6 +2,8 @@ package user
 
 import (
 	"errors"
+	"mime/multipart"
+	"template-go-api/app/media"
 	"template-go-api/app/rbac"
 	errors2 "template-go-api/errors"
 	"template-go-api/utils"
@@ -11,12 +13,14 @@ import (
 )
 
 type Repository struct {
-	db *gorm.DB
+	db    *gorm.DB
+	media *media.Repository
 }
 
-func NewRepository(db *gorm.DB) *Repository {
+func NewRepository(db *gorm.DB, mediaRepository *media.Repository) *Repository {
 	return &Repository{
-		db: db,
+		db:    db,
+		media: mediaRepository,
 	}
 }
 
@@ -24,6 +28,10 @@ func (r *Repository) GetAllPaginated(c *gin.Context) ([]User, *utils.PaginationM
 	var users []User
 	meta, err := utils.Paginate(c, r.db.WithContext(c).Preload("Roles"), &users)
 	if err != nil {
+		return nil, meta, err
+	}
+
+	if err := r.loadAvatars(c, users); err != nil {
 		return nil, meta, err
 	}
 	return users, meta, nil
@@ -38,7 +46,81 @@ func (r *Repository) GetById(c *gin.Context, id string) (*User, error) {
 		}
 		return nil, err
 	}
+
+	if err := r.LoadAvatar(c, &user); err != nil {
+		return nil, err
+	}
 	return &user, nil
+}
+
+// UpdateProfile mengubah data diri user yang sedang login. Kolom yang disentuh
+// dibatasi secara eksplisit supaya role, password, dan asosiasi lain tidak ikut
+// tertulis lewat endpoint ini.
+func (r *Repository) UpdateProfile(c *gin.Context, user *User, request UpdateProfileRequest) error {
+	err := r.db.WithContext(c).
+		Model(&User{}).
+		Where("id = ?", user.ID).
+		Updates(map[string]any{
+			"first_name":   request.FirstName,
+			"last_name":    request.LastName,
+			"email":        request.Email,
+			"phone_number": request.PhoneNumber,
+		}).Error
+	if err != nil {
+		return err
+	}
+
+	user.FirstName = request.FirstName
+	user.LastName = request.LastName
+	user.Email = request.Email
+	user.PhoneNumber = request.PhoneNumber
+	return nil
+}
+
+// UpdateAvatar mengganti avatar user. Collection avatar bersifat single file,
+// jadi avatar lama otomatis dihapus beserta filenya.
+func (r *Repository) UpdateAvatar(c *gin.Context, user *User, fileHeader *multipart.FileHeader) (*media.Media, error) {
+	avatar, err := r.media.Attach(c, user, MediaCollectionAvatar, fileHeader)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Avatar = avatar
+	return avatar, nil
+}
+
+// LoadAvatar memuat avatar satu user.
+func (r *Repository) LoadAvatar(c *gin.Context, user *User) error {
+	avatar, err := r.media.GetFirst(c, user, MediaCollectionAvatar)
+	if err != nil {
+		return err
+	}
+	user.Avatar = avatar
+	return nil
+}
+
+// loadAvatars memuat avatar banyak user dalam satu query agar tidak N+1.
+func (r *Repository) loadAvatars(c *gin.Context, users []User) error {
+	if len(users) == 0 {
+		return nil
+	}
+
+	ids := make([]string, len(users))
+	for i := range users {
+		ids[i] = users[i].GetMediaModelID()
+	}
+
+	grouped, err := r.media.GetForModels(c, MediaModelType, ids, MediaCollectionAvatar)
+	if err != nil {
+		return err
+	}
+
+	for i := range users {
+		if items := grouped[users[i].GetMediaModelID()]; len(items) > 0 {
+			users[i].Avatar = &items[0]
+		}
+	}
+	return nil
 }
 
 func (r *Repository) AddNew(c *gin.Context, request StoreRequest) (*User, error) {
@@ -105,6 +187,10 @@ func (r *Repository) UpdateById(c *gin.Context, id string, request UpdateRequest
 	if err != nil {
 		return nil, err
 	}
+
+	if err := r.LoadAvatar(c, &user); err != nil {
+		return nil, err
+	}
 	return &user, nil
 }
 
@@ -119,12 +205,19 @@ func (r *Repository) syncRoles(tx *gorm.DB, user *User, roleIDs []string) error 
 }
 
 func (r *Repository) DeleteById(c *gin.Context, id string) error {
-	result := r.db.WithContext(c).Delete(&User{}, "id = ?", id)
-	if result.Error != nil {
-		return result.Error
+	var user User
+	if err := r.db.WithContext(c).First(&user, "id = ?", id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors2.DataNotFoundException()
+		}
+		return err
 	}
-	if result.RowsAffected == 0 {
-		return errors2.DataNotFoundException()
+
+	if err := r.db.WithContext(c).Delete(&User{}, "id = ?", id).Error; err != nil {
+		return err
 	}
-	return nil
+
+	// Media tidak punya foreign key ke users karena relasinya polymorphic,
+	// jadi pembersihannya dilakukan di sini.
+	return r.media.DeleteForModel(c, &user)
 }

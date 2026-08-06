@@ -18,6 +18,10 @@ type Config struct {
 	RedisPort     string
 	RedisPassword string
 	RedisDB       string
+
+	MediaDisk      string
+	MediaRoot      string
+	MediaURLPrefix string
 }
 
 var AppConfig *Config
@@ -37,6 +41,22 @@ func LoadEnv() {
 	if appPort == "" {
 		appPort = "8000"
 	}
+
+	mediaDisk := os.Getenv("MEDIA_DISK")
+	if mediaDisk == "" {
+		mediaDisk = "local"
+	}
+
+	mediaRoot := os.Getenv("MEDIA_ROOT")
+	if mediaRoot == "" {
+		mediaRoot = "storage/media"
+	}
+
+	mediaURLPrefix := os.Getenv("MEDIA_URL_PREFIX")
+	if mediaURLPrefix == "" {
+		mediaURLPrefix = "/storage/media"
+	}
+
 	AppConfig = &Config{
 		AppPort:     appPort,
 		FrontendURL: os.Getenv("FRONTEND_URL"),
@@ -50,5 +70,9 @@ func LoadEnv() {
 		RedisPort:     os.Getenv("JWT_REDIS_PORT"),
 		RedisPassword: os.Getenv("JWT_REDIS_PASSWORD"),
 		RedisDB:       os.Getenv("JWT_REDIS_DB"),
+
+		MediaDisk:      mediaDisk,
+		MediaRoot:      mediaRoot,
+		MediaURLPrefix: mediaURLPrefix,
 	}
 }
